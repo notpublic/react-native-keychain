@@ -27,17 +27,17 @@ async () => {
   await Keychain.setGenericPassword(username, password);
 
   try {
-    // Retreive the credentials
+    // Retrieve the credentials
     const credentials = await Keychain.getGenericPassword();
     if (credentials) {
       console.log('Credentials successfully loaded for user ' + credentials.username);
     } else {
-      console.log('No credentials stored')
+      console.log('No credentials stored');
     }
   } catch (error) {
     console.log('Keychain couldn\'t be accessed!', error);
   }
-  await Keychain.resetGenericPassword()
+  await Keychain.resetGenericPassword();
 }
 ```
 
@@ -51,7 +51,7 @@ Will store the username/password combination in the secure storage. Resolves to 
 
 ### `getGenericPassword([{ authenticationPrompt, service }])`
 
-Will retreive the username/password combination from the secure storage. Resolves to `{ username, password }` if an entry exists or `false` if it doesn't. It will reject only if an unexpected error is encountered like lacking entitlements or permission.
+Will retrieve the username/password combination from the secure storage. Resolves to `{ username, password }` if an entry exists or `false` if it doesn't. It will reject only if an unexpected error is encountered like lacking entitlements or permission.
 
 ### `resetGenericPassword([{ service }])`
 
@@ -67,7 +67,7 @@ Will check if the username/password combination for server is available in the s
 
 ### `getInternetCredentials(server, [{ authenticationPrompt }])`
 
-Will retreive the server/username/password combination from the secure storage. Resolves to `{ username, password }` if an entry exists or `false` if it doesn't. It will reject only if an unexpected error is encountered like lacking entitlements or permission.
+Will retrieve the server/username/password combination from the secure storage. Resolves to `{ username, password }` if an entry exists or `false` if it doesn't. It will reject only if an unexpected error is encountered like lacking entitlements or permission.
 
 ### `resetInternetCredentials(server)`
 
@@ -254,6 +254,46 @@ If so, add a proguard rule in `proguard-rules.pro`:
 }
 ```
 
+## Unit Testing with Jest
+
+The keychain manager relies on interfacing with the native application itself. As such, it does not successfully compile and run in the context of a Jest test, where there is no underlying app to communicate with. To be able to call the JS functions exposed by this module in a unit test, you should mock them in one of the following two ways:
+
+First, let's create a mock object for the module:
+
+```js
+const keychainMock = {
+  SECURITY_LEVEL_ANY: "MOCK_SECURITY_LEVEL_ANY",
+  SECURITY_LEVEL_SECURE_SOFTWARE: "MOCK_SECURITY_LEVEL_SECURE_SOFTWARE",
+  SECURITY_LEVEL_SECURE_HARDWARE: "MOCK_SECURITY_LEVEL_SECURE_HARDWARE",
+  setGenericPassword: jest.fn().mockResolvedValue(),
+  getGenericPassword: jest.fn().mockResolvedValue(),
+  resetGenericPassword: jest.fn().mockResolvedValue(),
+  ...
+}
+```
+
+### Using a Jest `__mocks__` Directory
+
+1. Read the [jest docs](https://jestjs.io/docs/en/manual-mocks#mocking-node-modules) for initial setup
+
+2. Create a `react-native-keychain` folder in the `__mocks__` directory and add `index.js` file in it. It should contain the following code:
+
+```javascript
+export default keychainMock;
+```
+
+### Using a Jest Setup File
+
+1. In your Jest config, add a reference to a [setup file](https://jestjs.io/docs/en/configuration.html#setupfiles-array)
+
+2. Inside your setup file, set up mocking for this package:
+
+```javascript
+jest.mock("react-native-keychain", () => keychainMock);
+```
+
+Now your tests should run successfully, though note that writing and reading to the keychain will be effectively a no-op.
+
 ## Notes
 
 ### Android 
@@ -269,7 +309,7 @@ The `setInternetCredentials(server, username, password)` call will be resolved a
 
 ### iOS
 
-If you need Keychain Sharing in your iOS extension, make sure you use the same App Group and Keychain Sharing group names in your Main App and your Share Extension. To then share the keychain between the Main App and Share Extension, use the `accessGroup` ánd `service` option on `setGenericPassword` and `getGenericPassword`, like so: `getGenericPassword({ accessGroup: 'group.appname', service: 'com.example.appname' })`
+If you need Keychain Sharing in your iOS extension, make sure you use the same App Group and Keychain Sharing group names in your Main App and your Share Extension. To then share the keychain between the Main App and Share Extension, use the `accessGroup` and `service` option on `setGenericPassword` and `getGenericPassword`, like so: `getGenericPassword({ accessGroup: 'group.appname', service: 'com.example.appname' })`
 
 ### Security
 

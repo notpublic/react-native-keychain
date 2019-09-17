@@ -1,7 +1,7 @@
 package com.oblador.keychain;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
@@ -62,7 +62,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
         final Map<String, Object> constants = new HashMap<>();
         constants.put(SecurityLevel.ANY.jsName(), SecurityLevel.ANY.name());
         constants.put(SecurityLevel.SECURE_SOFTWARE.jsName(), SecurityLevel.SECURE_SOFTWARE.name());
-        constants.put(SecurityLevel.SECURE_HARDWARE.jsName(), SecurityLevel.SECURE_SOFTWARE.name());
+        constants.put(SecurityLevel.SECURE_HARDWARE.jsName(), SecurityLevel.SECURE_HARDWARE.name());
         return constants;
     }
 
